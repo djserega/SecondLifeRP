@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Конект проводки</title>
+    <style>
+        .cell {
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            text-align: center;
+            line-height: 20px;
+            cursor: pointer;
+        }
+        .horizontal div {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 1px solid black;
+            text-align: center;
+            line-height: 20px;
+            cursor: pointer;
+       }
+    </style>
+</head>
+<body>
+    <div id="game"></div>
+    
+	<script>
+        const savedPath =[
+            { '0:0': '↓', '1:0': '↳', '1:1': '↴', '2:1': '↳', '2:2': '↴', '3:2': '↳', '3:3': '↴', '4:3': '↳', '4:4': '→' },
+            { '0:0': '↓', '1:0': '↓', '2:0': '↓', '3:0': '↓', '4:0': '↳', '4:1': '→', '4:2': '→', '4:3': '→', '4:4': '→' },
+        ]
+        
+        var game = document.getElementById('game');
+        const directions = "←↰↑↱→↴↳↓↲".split('');
+        const board = Array(5).fill().map(() => Array(5).fill().map(() => directions[Math.floor(Math.random() * directions.length)]));
+
+        var cellColors = Array(5).fill().map(() => Array(5).fill('any'));
+
+        function fillColors(){
+            cellColors = Array(5).fill().map(() => Array(5).fill('any'));
+            for (let s = 0; s < savedPath.length; s++){
+                let isMatch = true;
+                for (let i = 0; i < 5; i++) {
+                    for (let j = 0; j < 5; j++) {
+                        const cellKey = `${i}:${j}`;
+                        if (savedPath[s][cellKey] && board[i][j] === savedPath[s][cellKey]) {
+                            cellColors[i][j] = 'green';
+                        }
+                    }
+                }
+            }
+        }
+
+        function isBoardMatchingSavedPath() {
+            for (let s = 0; s < savedPath.length; s++){
+                let isMatch = true;
+                for (let i = 0; i < 5; i++) {
+                    for (let j = 0; j < 5; j++) {
+                        const cellKey = `${i}:${j}`;
+                        if (savedPath[s][cellKey] && board[i][j] !== savedPath[s][cellKey]) {
+                            isMatch = false;
+                            break;
+                        }
+                    }
+                    if (!isMatch) break;
+                }
+                if (isMatch) return true;
+            }
+            return false;
+        }
+
+        function drawBoard() {
+            game.innerHTML = '';
+            for (var i = 0; i < 5; i++) {
+                var row = document.createElement('div');
+                row.className = 'horizontal';
+                for (var j = 0; j < 5; j++) {
+                    var cell = document.createElement('div');
+                    cell.innerHTML = board[i][j];
+                    cell.className = 'cell';
+                    cell.style.backgroundColor = cellColors[i][j];
+                    cell.onclick = (function(i, j) {
+                        return function() {     
+                            const currentIndex = directions.indexOf(board[i][j]);
+                            const nextIndex = (currentIndex + 1) % directions.length;
+                            board[i][j] = directions[nextIndex];
+                            const cellKey = `${i}:${j}`;
+                            fillColors();
+                            drawBoard();
+                        }
+                    })(i, j);
+                    row.appendChild(cell);
+                }
+                game.appendChild(row);
+            }
+            if (isBoardMatchingSavedPath()){
+                alert("You win!");
+            }
+        }
+
+        fillColors();
+        drawBoard();
+
+    </script>
+</body>
+</html>
